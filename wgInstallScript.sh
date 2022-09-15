@@ -66,7 +66,7 @@ AllowedIPs = 10.10.10.${CLIENT_IP}/32$NEWLINE")
 #Create the client config file for connecting
 sudo tee /etc/wireguard/wg-${CLIENT_NAME}.conf >/dev/null << EOF
 [Interface]
-Address = 10.10.10.2/24
+Address = 10.10.10.${CLIENT_IP}/24
 DNS = 10.10.10.1
 PrivateKey = $CLIENT_PRIV_KEY
 
