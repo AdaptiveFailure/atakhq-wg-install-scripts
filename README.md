@@ -23,6 +23,9 @@ This is a script package that will install wireguard for you on a centos7 server
 5. Copy the config file downloader script to your local machine and run it
 
 `git clone https://github.com/atakhq/wg-centos7-install-scripts.git`
+
 `cd wg-centos7-install-scripts`
+
 `sudo chmod +x *`
-`. wgInstallScript.sh`
+
+`. wgLocalMachineConfigDownloader.sh`
