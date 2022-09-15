@@ -1,6 +1,6 @@
 # wg-centos7-install-scripts
 
-This is a script package that will install wireguard for you on a centos7 server and walk you through the entire process.
+This is a script package that will install wireguard for you on a centos7 server and walk you through the entire process, prompting your for user creation so your don't have to manually create certs one by one.
 
 
 1. SSH into your server as root
@@ -29,3 +29,5 @@ This is a script package that will install wireguard for you on a centos7 server
 `sudo chmod +x *`
 
 `. wgLocalMachineConfigDownloader.sh`
+
+6. You now have the config files locally and can connect with the wireguard app after you import the config file and create a connection.
