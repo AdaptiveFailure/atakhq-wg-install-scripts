@@ -10,4 +10,12 @@ This is a script package that will install wireguard for you on a centos7 server
 
 3. Clone this repo to your server
 
-``
+`https://github.com/atakhq/wg-centos7-install-scripts.git`
+
+4. Move into the folder, make the script executable, run it
+
+`cd wg-centos7-install-scripts`
+
+`sudo chmod +x *`
+
+`. wgInstallScript.sh`
