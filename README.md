@@ -10,11 +10,11 @@ This is a script package that will install wireguard for you on a centos7 or ubu
 
 3. Clone this repo to your server
 
-`git clone https://github.com/atakhq/wg-centos7-install-scripts.git`
+`git clone https://github.com/atakhq/wg-install-scripts.git`
 
 4. Move into the folder, make the script executable, run it
 
-`cd wg-centos7-install-scripts`
+`cd wg-install-scripts`
 
 `sudo chmod +x *`
 
@@ -26,7 +26,7 @@ or
 
 5. Copy the config file downloader script to your local machine and run it
 
-`git clone https://github.com/atakhq/wg-centos7-install-scripts.git`
+`git clone https://github.com/atakhq/wg-install-scripts.git`
 
 `cd wg-centos7-install-scripts`
 
