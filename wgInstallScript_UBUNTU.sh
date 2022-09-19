@@ -7,9 +7,7 @@ read -p "Press any key to begin ..."
 echo "What is your server IP address?"
 read PUB_SERVER_IP
 
-sudo apt-get install epel-release https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm -y
-sudo apt-get install yum-plugin-elrepo -y
-sudo apt-get install kmod-wireguard wireguard-tools -y
+sudo apt-get install wireguard wireguard-tools -y
 sudo mkdir -p /etc/wireguard/
 
 #Make the server private keys
