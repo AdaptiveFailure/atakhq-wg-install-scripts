@@ -76,13 +76,18 @@ EOF
 
  done   
 
-#echo "${CLIENT_ARR[*]}"
 
 #Create the server config file
 sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
 [Interface]
 Address = 10.10.10.1/24
 SaveConfig = true
+PostUp = ufw route allow in on wg0 out on enp3s0
+PostUp = iptables -t nat -I POSTROUTING -o enp3s0 -j MASQUERADE
+PostUp = ip6tables -t nat -I POSTROUTING -o enp3s0 -j MASQUERADE
+PreDown = ufw route delete allow in on wg0 out on enp3s0
+PreDown = iptables -t nat -D POSTROUTING -o enp3s0 -j MASQUERADE
+PreDown = ip6tables -t nat -D POSTROUTING -o enp3s0 -j MASQUERADE
 PrivateKey = $SERVER_PRIV_KEY
 ListenPort = 51820
 ${CLIENT_ARR[*]}
@@ -95,58 +100,24 @@ sudo sed -i 's/\s\[/\[/g' /etc/wireguard/wg0.conf
 sudo chmod 600 /etc/wireguard/ -R
 
 #Enable IP Forwarding
-sudo systemctl start firewalld
-sudo firewall-cmd --zone=public --permanent --add-masquerade
-sudo systemctl reload firewalld
-
-#Install a DNS Resolver on the Server
-sudo apt-get install bind -y
-sudo systemctl start named
-sudo systemctl enable named
-systemctl status named
-
-sudo rm /etc/named.conf
-sudo tee /etc/named.conf >/dev/null << EOF
-options {
-        directory	"/var/named";
-        dump-file	"/var/named/data/cache_dump.db";
-        statistics-file "/var/named/data/named_stats.txt";
-        memstatistics-file "/var/named/data/named_mem_stats.txt";
-        recursing-file  "/var/named/data/named.recursing";
-        secroots-file   "/var/named/data/named.secroots";
-        allow-query     { localhost; 10.10.10.0/24; };
-	recursion yes;
-        dnssec-enable yes;
-        dnssec-validation yes;
-        /* Path to ISC DLV key */
-        bindkeys-file "/etc/named.root.key";
-        managed-keys-directory "/var/named/dynamic";
-        pid-file "/run/named/named.pid";
-        session-keyfile "/run/named/session.key";
-};
-logging {
-        channel default_debug {
-                file "data/named.run";
-                severity dynamic;
-        };
-};
-zone "." IN {
-        type hint;
-        file "named.ca";
-};
-include "/etc/named.rfc1912.zones";
-include "/etc/named.root.key";
+sudo rm /etc/sysctl.conf
+sudo tee /etc/sysctl.conf >/dev/null << EOF
+net.ipv4.ip_forward=1
+net.ipv6.conf.all.forwarding=1
 EOF
 
-#Restart named for changes to take effect
-sudo systemctl restart named
+#Load the new setup
+sudo sysctl -p
 
-#Allow VPN Port 53
-sudo firewall-cmd --zone=public --permanent --add-rich-rule='rule family="ipv4" source address="10.10.10.0/24" accept'
+#Open required ports
+sudo ufw allow 51820/udp
+sudo ufw allow OpenSSH
 
-#Open WireGuard UDP port 51820 on the server.
-sudo firewall-cmd --permanent --add-port=51820/udp
-sudo systemctl reload firewalld
+
+
+
+
+
 
 #Start the server
 sudo systemctl start wg-quick@wg0.service
