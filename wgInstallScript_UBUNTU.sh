@@ -13,6 +13,7 @@ read PUB_SERVER_GATEWAY_IP
 echo "What is the name of your ethernet device? (run this command to find out: 'ip route list table main default')"
 read DEVICE_NAME
 
+sudo apt-get update -y
 sudo apt-get install wireguard wireguard-tools -y
 sudo mkdir -p /etc/wireguard/
 
