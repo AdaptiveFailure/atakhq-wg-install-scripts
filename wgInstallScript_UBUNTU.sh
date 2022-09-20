@@ -106,7 +106,6 @@ sudo sed -i 's/\s\[/\[/g' /etc/wireguard/wg0.conf
 sudo rm /etc/sysctl.conf
 sudo tee /etc/sysctl.conf >/dev/null << EOF
 net.ipv4.ip_forward=1
-net.ipv6.conf.all.forwarding=1
 EOF
 
 #Load the new setup
