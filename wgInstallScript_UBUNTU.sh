@@ -4,13 +4,13 @@ echo "** YOU MUST RUN THIS SCRIPT AS ROOT USER **"
 echo " "
 read -p "Press any key to begin ..."
 
-DEVICE_NAME=ip -o -4 route show to default | awk '{print $5}'
+DEVICE_NAME=$(ip -o -4 route show to default | awk '{print $5}')
 echo "FOUND DEVICE NAME: $DEVICE_NAME"
 
-PUB_SERVER_IP=ip addr show enp3s0 | awk 'NR==3{print substr($2,1,(length($2)-3))}'
+PUB_SERVER_IP=(ip addr show enp3s0 | awk 'NR==3{print substr($2,1,(length($2)-3))}')
 echo "FOUND SERVER IP: $PUB_SERVER_IP"
 
-PUB_SERVER_GATEWAY_IP=ip route list table main default | awk '{print $3}'
+PUB_SERVER_GATEWAY_IP=(ip route list table main default | awk '{print $3}')
 echo "FOUND SERVER GATEWAY IP: $PUB_SERVER_GATEWAY_IP"
 
 
@@ -121,7 +121,7 @@ sudo ufw enable
 #Start the server
 sudo systemctl enable wg-quick@wg0.service
 sudo systemctl start wg-quick@wg0.service
-sudo systemctl status wg-quick@wg0.service
+ehco $(sudo systemctl status wg-quick@wg0.service)
 echo " "
 echo "********************************************************************"
 echo "Setup Script done, your WireGuard VPN Service should now be running (check status above should see a green dot and Active)"
