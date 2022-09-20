@@ -76,14 +76,12 @@ PrivateKey = $CLIENT_PRIV_KEY
 [Peer]
 PublicKey = $SERVER_PUB_KEY
 AllowedIPs = 0.0.0.0/0 
-Endpoint = $PUB_SERVER_IP:51820
-PersistentKeepalive = 25
+Endpoint = $PUB_SERVER_IP:69420
 EOF
 
  done   
 
-#Secure Private keys
-sudo chmod go= /etc/wireguard/private.key
+
 
 #Create the server config file
 sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
@@ -91,7 +89,7 @@ sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
 Address = 10.10.10.1/24
 SaveConfig = true
 PrivateKey = $SERVER_PRIV_KEY
-ListenPort = 51820
+ListenPort = 69420
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $DEVICE_NAME -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
 
@@ -101,6 +99,8 @@ EOF
 #Cleanup some stupid spaces from the array insert
 sudo sed -i 's/\s\[/\[/g' /etc/wireguard/wg0.conf 
 
+#Secure Private keys
+sudo chmod 600 /etc/wireguard/
 
 #Enable IP Forwarding
 sudo rm /etc/sysctl.conf
@@ -112,7 +112,7 @@ EOF
 sudo sysctl -p
 
 #Open required ports
-sudo ufw allow 51820/udp
+sudo ufw allow 69420/udp
 sudo ufw allow OpenSSH
 sudo ufw disable
 sudo ufw enable
