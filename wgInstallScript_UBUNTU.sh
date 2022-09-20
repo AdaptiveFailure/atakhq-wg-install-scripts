@@ -76,7 +76,7 @@ PrivateKey = $CLIENT_PRIV_KEY
 [Peer]
 PublicKey = $SERVER_PUB_KEY
 AllowedIPs = 0.0.0.0/0 
-Endpoint = $PUB_SERVER_IP:69420
+Endpoint = $PUB_SERVER_IP:42069
 EOF
 
  done   
@@ -89,7 +89,7 @@ sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
 Address = 10.10.10.1/24
 SaveConfig = true
 PrivateKey = $SERVER_PRIV_KEY
-ListenPort = 69420
+ListenPort = 42069
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $DEVICE_NAME -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
 
@@ -112,7 +112,7 @@ EOF
 sudo sysctl -p
 
 #Open required ports
-sudo ufw allow 69420/udp
+sudo ufw allow 42069/udp
 sudo ufw allow OpenSSH
 sudo ufw disable
 sudo ufw enable
