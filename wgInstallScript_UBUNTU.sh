@@ -7,6 +7,12 @@ read -p "Press any key to begin ..."
 echo "What is your server IP address?"
 read PUB_SERVER_IP
 
+echo "What is your server Gateway IP address? (same IP as before except last octet is 1)"
+read PUB_SERVER_GATEWAY_IP
+
+echo "What is the name of your ethernet device? (run this command to find out: 'ip route list table main default')"
+read DEVICE_NAME
+
 sudo apt-get install wireguard wireguard-tools -y
 sudo mkdir -p /etc/wireguard/
 
@@ -76,18 +82,24 @@ EOF
 
  done   
 
+#Secure Private keys
+sudo chmod go= /etc/wireguard/private.key
 
 #Create the server config file
 sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
 [Interface]
 Address = 10.10.10.1/24
 SaveConfig = true
-PostUp = ufw route allow in on wg0 out on enp3s0
-PostUp = iptables -t nat -I POSTROUTING -o enp3s0 -j MASQUERADE
-PostUp = ip6tables -t nat -I POSTROUTING -o enp3s0 -j MASQUERADE
-PreDown = ufw route delete allow in on wg0 out on enp3s0
-PreDown = iptables -t nat -D POSTROUTING -o enp3s0 -j MASQUERADE
-PreDown = ip6tables -t nat -D POSTROUTING -o enp3s0 -j MASQUERADE
+PostUp = ufw route allow in on wg0 out on $DEVICE_NAME
+PostUp = iptables -t nat -I POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+PostUp = ip6tables -t nat -I POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+PreDown = ufw route delete allow in on wg0 out on $DEVICE_NAME
+PreDown = iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+PreDown = ip6tables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+PostUp = ip rule add table 200 from $PUB_SERVER_IP
+PostUp = ip route add table 200 default via $PUB_SERVER_GATEWAY_IP
+PreDown = ip rule delete table 200 from $PUB_SERVER_IP
+PreDown = ip route delete table 200 default via $PUB_SERVER_GATEWAY_IP
 PrivateKey = $SERVER_PRIV_KEY
 ListenPort = 51820
 ${CLIENT_ARR[*]}
@@ -96,8 +108,6 @@ EOF
 #Cleanup some stupid spaces from the array insert
 sudo sed -i 's/\s\[/\[/g' /etc/wireguard/wg0.conf 
 
-#Secure the directory
-sudo chmod 600 /etc/wireguard/ -R
 
 #Enable IP Forwarding
 sudo rm /etc/sysctl.conf
@@ -112,16 +122,12 @@ sudo sysctl -p
 #Open required ports
 sudo ufw allow 51820/udp
 sudo ufw allow OpenSSH
-
-
-
-
-
-
+sudo ufw disable
+sudo ufw enable
 
 #Start the server
-sudo systemctl start wg-quick@wg0.service
 sudo systemctl enable wg-quick@wg0.service
+sudo systemctl start wg-quick@wg0.service
 sudo systemctl status wg-quick@wg0.service
 echo " "
 echo "********************************************************************"
