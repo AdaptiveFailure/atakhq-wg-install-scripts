@@ -121,7 +121,7 @@ sudo ufw enable
 #Start the server
 sudo systemctl enable wg-quick@wg0.service
 sudo systemctl start wg-quick@wg0.service
-ehco $(sudo systemctl status wg-quick@wg0.service)
+echo $(sudo systemctl status wg-quick@wg0.service)
 echo " "
 echo "********************************************************************"
 echo "Setup Script done, your WireGuard VPN Service should now be running (check status above should see a green dot and Active)"
