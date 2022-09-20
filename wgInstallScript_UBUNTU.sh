@@ -4,26 +4,25 @@ echo "** YOU MUST RUN THIS SCRIPT AS ROOT USER **"
 echo " "
 read -p "Press any key to begin ..."
 
-echo "What is your server IP address?"
-read PUB_SERVER_IP
+DEVICE_NAME=ip -o -4 route show to default | awk '{print $5}'
+echo "FOUND DEVICE NAME: $DEVICE_NAME"
 
-echo "What is your server Gateway IP address? (same IP as before except last octet is 1)"
-read PUB_SERVER_GATEWAY_IP
+PUB_SERVER_IP=ip addr show enp3s0 | awk 'NR==3{print substr($2,1,(length($2)-3))}'
+echo "FOUND SERVER IP: $PUB_SERVER_IP"
 
-echo "What is the name of your ethernet device? (run this command to find out: 'ip route list table main default')"
-read DEVICE_NAME
+PUB_SERVER_GATEWAY_IP=ip route list table main default | awk '{print $3}'
+echo "FOUND SERVER GATEWAY IP: $PUB_SERVER_GATEWAY_IP"
+
 
 sudo apt-get update -y
-sudo apt-get install wireguard wireguard-tools -y
-sudo mkdir -p /etc/wireguard/
+sudo apt-get install wireguard  -y
 
-#Make the server private keys
+#Make the server keys
 cd /etc/wireguard
 wg genkey | sudo tee /etc/wireguard/server_private.key | wg pubkey | sudo tee /etc/wireguard/server_public.key
-sudo mkdir -p /etc/wireguard/
-
 SERVER_PRIV_KEY_PATH="/etc/wireguard/server_private.key"
 SERVER_PUB_KEY_PATH="/etc/wireguard/server_public.key"
+
 #Read the server keys
 while read line; do
 SERVER_PRIV_KEY=$line
@@ -91,18 +90,11 @@ sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
 [Interface]
 Address = 10.10.10.1/24
 SaveConfig = true
-PostUp = ufw route allow in on wg0 out on $DEVICE_NAME
-PostUp = iptables -t nat -I POSTROUTING -o $DEVICE_NAME -j MASQUERADE
-PostUp = ip6tables -t nat -I POSTROUTING -o $DEVICE_NAME -j MASQUERADE
-PreDown = ufw route delete allow in on wg0 out on $DEVICE_NAME
-PreDown = iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
-PreDown = ip6tables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
-PostUp = ip rule add table 200 from $PUB_SERVER_IP
-PostUp = ip route add table 200 default via $PUB_SERVER_GATEWAY_IP
-PreDown = ip rule delete table 200 from $PUB_SERVER_IP
-PreDown = ip route delete table 200 default via $PUB_SERVER_GATEWAY_IP
 PrivateKey = $SERVER_PRIV_KEY
 ListenPort = 51820
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+
 ${CLIENT_ARR[*]}
 EOF
 
