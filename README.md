@@ -21,7 +21,8 @@ This is a script package that will install wireguard for you on a centos7 or ubu
 `. wgInstallScript_CENTOS7.sh`
 
 or
-** NOTE THE UBUNUT VERSION DOES NOT CURRENTLY WORK **
+
+** NOTE THE UBUNUTU VERSION DOES NOT CURRENTLY WORK **
 
 `. wgInstallScript_UBUNTU.sh`
 
