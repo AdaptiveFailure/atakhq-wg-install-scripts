@@ -1,5 +1,5 @@
 # Wireguard Install Scripts
-## ** Assumes you have docker and docker-compose installed already since this is typically installed after TAK Server which would install these for us **
+## ** Assumes you have docker and docker-compose installed already since this is typically installed after TAK Server which requires both to run **
 
 This is a script package that will install wireguard for you inside a docker container on Ubuntu (non-docker for CentOS7). 
 
