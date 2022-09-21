@@ -25,7 +25,7 @@ or
 
 `. wgInstallScript_UBUNTU.sh`
 
-##Post Install
+### Post Install
 
 Connect to your docker instance so you can grab your QR Codes for logins:
 
