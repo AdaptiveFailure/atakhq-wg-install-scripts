@@ -1,6 +1,8 @@
-# wg-install-scripts
+# Wireguard Install Scripts
 
-This is a script package that will install wireguard for you inside a docker container, and creates QR codes for easy connection.
+This is a script package that will install wireguard for you inside a docker container on Ubuntu (non-docker for CentOS7). 
+
+Also creates QR codes for easy connection.
 
 
 1. SSH into your server as root
@@ -25,7 +27,7 @@ or
 
 `. wgInstallScript_UBUNTU.sh`
 
-### Post Install
+## Post Install
 
 Connect to your docker instance so you can grab your QR Codes for logins:
 
