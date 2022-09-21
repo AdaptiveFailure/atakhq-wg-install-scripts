@@ -1,9 +1,10 @@
 # wg-install-scripts
 
-This is a script package that will install wireguard for you on a centos7 or ubuntu server and walk you through the entire process, prompting your for user creation so your don't have to manually create certs one by one.
+This is a script package that will install wireguard for you inside a docker container, and creates QR codes for easy connection.
 
 
 1. SSH into your server as root
+
 2. Install git if you do not have it installed already
 
 `sudo yum install -y git` for centos7, ubuntu should have installed already.
@@ -22,18 +23,16 @@ This is a script package that will install wireguard for you on a centos7 or ubu
 
 or
 
-** NOTE THE UBUNUTU VERSION DOES NOT CURRENTLY WORK **
-
 `. wgInstallScript_UBUNTU.sh`
 
-5. Copy the config file downloader script to your local machine and run it
+###Post Install
 
-`git clone https://github.com/atakhq/wg-install-scripts.git`
+Connect to your docker instance so you can grab your QR Codes for logins:
 
-`cd wg-centos7-install-scripts`
+`docker exec -it wireguard bash`
 
-`sudo chmod +x *`
+Move to the app folder, and run the show peer script to display the QR code on the screen to scan in wireguard to make your connection:
 
-`. wgLocalMachineConfigDownloader.sh`
+`cd /app`
 
-6. You now have the config files locally and can connect with the wireguard app after you import the config file and create a connection.
+`./show-peer 1`
