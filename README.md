@@ -1,7 +1,6 @@
 # Wireguard Install Scripts
-## ** Assumes you have docker and docker-compose installed already since this is typically installed after TAK Server which requires both to run **
 
-This is a script package that will install wireguard for you inside a docker container on Ubuntu (non-docker for CentOS7). 
+This is a script package that will install wireguard for you on Ubuntu or CentOS7. 
 
 Also creates QR codes for easy connection.
 
@@ -30,12 +29,4 @@ or
 
 ## Post Install
 
-Connect to your docker instance so you can grab your QR Codes for logins:
-
-`docker exec -it wireguard bash`
-
-Move to the app folder, and run the show peer script to display the QR code on the screen to scan in wireguard to make your connection:
-
-`cd /app`
-
-`./show-peer 1`
+List the files in the /etc/wireguard directory and display/save the QR Codes or config files as needed for connecting as a client.
