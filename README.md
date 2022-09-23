@@ -29,4 +29,4 @@ or
 
 ## Post Install
 
-List the files in the /etc/wireguard directory and display/save the QR Codes or config files as needed for connecting as a client.
+Run `wgLocalMachineConfigDownloader.sh` from your local machine to download the config QR Code PNG's to scan and auto-create your connections on your client devices. 
