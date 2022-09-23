@@ -1,101 +1,149 @@
-#WireGuard VPN Setup Script UBUNTU 
+#WireGuard VPN Setup Script UBUNTU
+echo "WireGuard VPN Setup Script UBUNTU"
+echo "** YOU MUST RUN THIS SCRIPT AS ROOT USER **"
+echo " "
+read -p "Press any key to begin ..."
 
-echo "WireGuard VPN Docker Setup Script UBUNTU" 
-echo " " 
-read -p "Press any key to begin ..." 
+DEVICE_NAME=$(ip -o -4 route show to default | awk '{print $5}')
+echo "FOUND DEVICE NAME: $DEVICE_NAME"
 
-echo "What port do you want to use? (Defaults to 51820 if nothing entered)"
-read PORTNUM
+PUB_SERVER_IP=$(ip addr show enp3s0 | awk 'NR==3{print substr($2,1,(length($2)-3))}')
+echo "FOUND SERVER IP: $PUB_SERVER_IP"
 
-if [ -z "${PORTNUM}" ]; then 
-    PORTNUM='51820'
+PUB_SERVER_GATEWAY_IP=$(ip route list table main default | awk '{print $3}')
+echo "FOUND SERVER GATEWAY IP: $PUB_SERVER_GATEWAY_IP"
+
+echo " "
+echo "What Port do you want to use? (default to 51820 if no entry)"
+read VPN_PORT
+
+if [ -z "${VPN_PORT}" ]; then 
+    VPN_PORT='51820'
 else 
-    PORTNUM=${PORTNUM}
+    VPN_PORT=${VPN_PORT}
 fi
 
-echo "Would you like to specify a DNS? (Defaults to 94.140.14.14 AdGuard DNS Server if nothing entered)"
-read PEERDNS
+#Update Machine
+sudo apt-get update && sudo apt-get upgrade -y
 
-if [ -z "${PEERDNS}" ]; then 
-    PEERDNS='94.140.14.14'
-else 
-    PEERDNS=${PEERDNS}
-fi
-
-echo "What is your Timezone? (Defaults to America/New_York if nothing entered)"
-read TZ
-
-if [ -z "${TZ}" ]; then 
-    TZ='America/New_York'
-else 
-    TZ=${TZ}
-fi
-
-
-echo "How many Clients do you want to configure? (Deafults to 5 if nothing entered)" 
-read CLIENT_COUNT 
-if [ -z "${CLIENT_COUNT}" ]; then 
-    CLIENT_COUNT='5'
-else 
-    CLIENT_COUNT=${CLIENT_COUNT}
-fi
-
-#Create the docker-compose file
-CCOUNT=""
-for ((i=1;i<=$CLIENT_COUNT;i++)) 
-	do 
-		CCOUNT+=$i
-		CCOUNT+=","
-	done 
-CCOUNT_INPUT=$(echo $CCOUNT | sed 's/,$//')
-cd ~ 
-mkdir wireguard 
-cd wireguard/ 
-
-sudo tee ~/wireguard/docker-compose.yml >/dev/null << EOF
----
-version: "2.1"
-services:
-  wireguard:
-    image: ghcr.io/linuxserver/wireguard
-    container_name: wireguard
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=$TZ
-      - SERVERPORT=$PORTNUM
-      - PEERDNS=$PEERDNS
-      - PEERS=$CCOUNT_INPUT
-    volumes:
-      - /path/to/appdata/config:/config
-      - /lib/modules:/lib/modules
-    ports:
-      - $PORTNUM:$PORTNUM/udp
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
-    restart: unless-stopped
+#Enable IP Forwarding
+sudo rm /etc/sysctl.conf
+sudo tee /etc/sysctl.conf >/dev/null << EOF
+net.ipv4.ip_forward=1
 EOF
-	
-docker-compose up -d
+sysctl -p /etc/sysctl.conf
 
-echo " " 
-echo "********************************************************************" 
-echo "Setup Script done, your WireGuard VPN Docker Service should now be running " 
-echo "********************************************************************" 
+#Firewall setup
+sudo apt install ufw
+sudo ufw allow ssh
+sudo ufw allow 51820/udp
+sudo ufw enable
+
+#Install Deps
+sudo apt-get install wireguard wireguard-tools qrencode -y
+
+#Make the server private keys
+cd /etc/wireguard
+umask 077
+
+
+#Make the server keys
+cd /etc/wireguard
+wg genkey | sudo tee /etc/wireguard/server_private.key | wg pubkey | sudo tee /etc/wireguard/server_public.key
+SERVER_PRIV_KEY_PATH="/etc/wireguard/server_private.key"
+SERVER_PUB_KEY_PATH="/etc/wireguard/server_public.key"
+
+#Read the server keys
+while read line; do
+SERVER_PRIV_KEY=$line
+done < $SERVER_PRIV_KEY_PATH
+
+while read line; do
+SERVER_PUB_KEY=$line
+done < $SERVER_PUB_KEY_PATH
+
 echo " "
-echo "********************************************************************" 
-echo "Connect to your docker instance so you can grab your QR Codes for logins:"
-echo "docker exec -it wireguard bash" 
 echo " "
-echo "Move to the app folder, and run the show peer script to display the QR code on the screen to scan in wireguard to make your connection:"
-echo "cd /app"
-echo "./show-peer 1"
+
+#Make the Client Keys
+echo "How many clients do you want to configure?"
+read CLIENT_COUNT
+CLIENT_ARR=()
+for ((i=1; i<=$CLIENT_COUNT;i++))
+
+do
+    CLIENT_IP=`expr $i + 1`
+    echo "What is the username for client #$i?"
+    read CLIENT_NAME
+    echo "Creating certs for $CLIENT_NAME"
+    wg genkey | sudo tee /etc/wireguard/${CLIENT_NAME}_private.key | wg pubkey | sudo tee /etc/wireguard/${CLIENT_NAME}_public.key
+    #Read the server key
+
+    #Read the Client Key
+    NEWLINE=$'\n'
+    CLIENT_PUB_KEY_PATH="/etc/wireguard/${CLIENT_NAME}_public.key"
+    CLIENT_PRIV_KEY_PATH="/etc/wireguard/${CLIENT_NAME}_private.key"
+
+    while read line; do
+    CLIENT_PUB_KEY=$line
+    done < $CLIENT_PUB_KEY_PATH
+
+    while read line; do
+    CLIENT_PRIV_KEY=$line
+    done < $CLIENT_PRIV_KEY_PATH
+
+
+    CLIENT_ARR+=("[Peer]
+PublicKey = ${CLIENT_PUB_KEY}
+AllowedIPs = 10.10.10.${CLIENT_IP}/32$NEWLINE")
+
+#Create the client config file for connecting
+#MTU of 1280 required or handshake will happen and no traffic will send
+sudo tee /etc/wireguard/wg-${CLIENT_NAME}.conf >/dev/null << EOF
+[Interface]
+Address = 10.10.10.${CLIENT_IP}/24
+PrivateKey = $CLIENT_PRIV_KEY
+MTU = 1280
+DNS = 1.1.1.1
+[Peer]
+PublicKey = $SERVER_PUB_KEY
+AllowedIPs = 0.0.0.0/0 
+Endpoint = $PUB_SERVER_IP:51820
+PersistentKeepalive = 25
+EOF
+
+#Create QR Code for conx
+qrencode -o wg-${CLIENT_NAME}.png -t png < /etc/wireguard/wg-${CLIENT_NAME}.conf
+
+ done   
+
+
+#Create the server config file
+#MTU of 1280 required or handshake will happen and no traffic will send
+sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
+[Interface]
+Address = 10.10.10.1/24
+SaveConfig = true
+PrivateKey = $SERVER_PRIV_KEY
+ListenPort = 51820
+MTU = 1280
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
+${CLIENT_ARR[*]}
+EOF
+
+#Cleanup some stupid spaces from the array insert
+sudo sed -i 's/\s\[/\[/g' /etc/wireguard/wg0.conf 
+
+
+#Start the server
+sudo systemctl enable wg-quick@wg0.service
+sudo systemctl start wg-quick@wg0.service
 echo " "
-echo "********************************************************************" 
+echo "********************************************************************"
+echo "Setup Script done, your WireGuard VPN Service should now be running"
+echo "********************************************************************"
 echo " "
-echo "********************************************************************" 
-echo "WARNING: IF YOU ARE USING THE CONFIG FILES FROM THE PEER FOLDERS INSTEAD OF THE QR CODES MAKE SURE TO EDIT ALLOWED IPs SO YOU DO NOT LEAK YOUR IP" 
+echo "********************************************************************"
+echo "All connection config files are located in /etc/wireguard/ we suggest using the QR codes"
 echo "********************************************************************"
