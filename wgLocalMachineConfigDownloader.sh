@@ -18,14 +18,14 @@ read PUB_SERVER_IP
 echo " "
 echo "Connecting to Server...."
 
-scp root@$PUB_SERVER_IP:/etc/wireguard/*.conf ~/atak/wireguard
+scp root@$PUB_SERVER_IP:/etc/wireguard/*.png ~/atak/wireguard
 
 cd ~/atak/wireguard
 ls -al
 echo " "
 echo " "
 echo "****************************************************************"
-echo "Your config files have been downloaded, a list of them is above."
+echo "Your config file PNG's have been downloaded, a list of them is above."
 echo "****************************************************************"
 echo " "
 echo " "
