@@ -139,6 +139,7 @@ sudo sed -i 's/\s\[/\[/g' /etc/wireguard/wg0.conf
 #Start the server
 sudo systemctl enable wg-quick@wg0.service
 sudo systemctl start wg-quick@wg0.service
+sudo wg
 echo " "
 echo "********************************************************************"
 echo "Setup Script done, your WireGuard VPN Service should now be running"
