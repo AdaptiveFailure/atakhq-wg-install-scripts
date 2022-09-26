@@ -29,4 +29,16 @@ or
 
 ## Post Install
 
+1. Clone this repo to your server
+
+`git clone https://github.com/atakhq/wg-install-scripts.git`
+
+2. Move into the folder, make the scripts executable, run the local transfer scripts:
+
+`wgGetConfigQrPngs.sh` for a scanable QR code to auto-create the connection in wireguard client (suggested) 
+
+or
+
+`wgGetConfigFiles.sh` for the .conf text files.
+
 Run `wgLocalMachineConfigDownloader.sh` from your local machine to download the config QR Code PNG's to scan and auto-create your connections on your client devices. 
