@@ -111,7 +111,7 @@ DNS = 1.1.1.1
 [Peer]
 PublicKey = $SERVER_PUB_KEY
 AllowedIPs = 0.0.0.0/0 
-Endpoint = $PUB_SERVER_IP:51820
+Endpoint = $PUB_SERVER_IP:$VPN_PORT
 PersistentKeepalive = 25
 EOF
 
@@ -128,7 +128,7 @@ sudo tee /etc/wireguard/wg0.conf >/dev/null << EOF
 Address = 10.10.10.1/24
 SaveConfig = true
 PrivateKey = $SERVER_PRIV_KEY
-ListenPort = 51820
+ListenPort = $VPN_PORT
 MTU = 1280
 PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $DEVICE_NAME -j MASQUERADE
 PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $DEVICE_NAME -j MASQUERADE
