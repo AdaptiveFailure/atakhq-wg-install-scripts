@@ -39,7 +39,7 @@ sysctl -p /etc/sysctl.conf
 #Firewall setup
 sudo apt install ufw
 sudo ufw allow ssh
-sudo ufw allow 51820/udp
+sudo ufw allow $VPN_PORT/udp
 sudo ufw enable
 
 #Install Deps
