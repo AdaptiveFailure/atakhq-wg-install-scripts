@@ -30,6 +30,9 @@ sudo apt-get update && sudo apt-get upgrade -y
 sudo rm /etc/sysctl.conf
 sudo tee /etc/sysctl.conf >/dev/null << EOF
 net.ipv4.ip_forward=1
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
 EOF
 sysctl -p /etc/sysctl.conf
 
