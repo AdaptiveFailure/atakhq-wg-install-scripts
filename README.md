@@ -35,10 +35,10 @@ or
 
 2. Move into the folder, make the scripts executable, run the local transfer scripts:
 
-`wgGetConfigQrPngs.sh` for a scanable QR code to auto-create the connection in wireguard client (suggested) 
+`./wgGetConfigQrPngs.sh` for a scanable QR code to auto-create the connection in wireguard client (suggested) 
 
 or
 
-`wgGetConfigFiles.sh` for the .conf text files.
+`./wgGetConfigFiles.sh` for the .conf text files.
 
 Run `wgLocalMachineConfigDownloader.sh` from your local machine to download the config QR Code PNG's to scan and auto-create your connections on your client devices. 
