@@ -7,7 +7,7 @@ read -p "Press any key to begin ..."
 DEVICE_NAME=$(ip -o -4 route show to default | awk '{print $5}')
 echo "FOUND DEVICE NAME: $DEVICE_NAME"
 
-PUB_SERVER_IP=$(ip addr show enp3s0 | awk 'NR==3{print substr($2,1,(length($2)-3))}')
+PUB_SERVER_IP=$(ip addr show $DEVICE_NAME | awk 'NR==3{print substr($2,1,(length($2)-3))}')
 echo "FOUND SERVER IP: $PUB_SERVER_IP"
 
 PUB_SERVER_GATEWAY_IP=$(ip route list table main default | awk '{print $3}')
